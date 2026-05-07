@@ -31,7 +31,7 @@ async function run() {
         console.log(`Prezzo Base: ${data.lastPrice} | Corrente: ${currentPrice} | Var: ${percentageChange.toFixed(2)}%`);
 
         // 4. Controlla se la soglia del 5% è superata (positiva o negativa)
-        if (Math.abs(percentageChange) >= 0) {
+        if (Math.abs(percentageChange) >= 5) {
             const direction = percentageChange > 0 ? "AUMENTO" : "CROLLO";
             const icon = percentageChange > 0 ? "🚀" : "⚠️";
             
