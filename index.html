@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BTC Portfolio Tracker - Pro</title>
+    <title>BTC Portfolio Tracker - Cloud Sync</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
@@ -11,301 +11,190 @@
         body { font-family: 'Inter', sans-serif; background-color: #0f172a; color: #f8fafc; }
         .glass { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1); }
         .gradient-text { background: linear-gradient(90deg, #38bdf8, #818cf8); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-        .pulse-fast { animation: pulse 0.2s cubic-bezier(0.4, 0, 0.6, 1); }
-        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.7; } }
-        
-        .table-input {
-            background: rgba(15, 23, 42, 0.5);
-            border: 1px solid rgba(255,255,255,0.1);
-            color: white;
-            padding: 4px 8px;
-            border-radius: 6px;
-            width: 100%;
-            font-family: monospace;
-        }
+        .table-input { background: rgba(15, 23, 42, 0.5); border: 1px solid rgba(255,255,255,0.1); color: white; padding: 4px 8px; border-radius: 6px; width: 100%; font-family: monospace; }
         .table-input:focus { border-color: #38bdf8; outline: none; background: rgba(15, 23, 42, 0.8); }
     </style>
 </head>
 <body class="p-4 md:p-10">
-
     <div class="max-w-6xl mx-auto">
         <div class="flex flex-col md:flex-row justify-between items-center mb-10 gap-4">
             <div>
                 <h1 class="text-4xl font-extrabold gradient-text italic">BTC Monitor Pro</h1>
-                <p class="text-slate-400 text-sm">Salvataggio Locale Attivo • Aggiornamento 200ms</p>
+                <p class="text-slate-400 text-sm">Sincronizzazione Cloud GitHub • EUR</p>
             </div>
-            <div class="glass px-6 py-3 rounded-2xl flex items-center gap-4">
-                <span class="text-slate-400 text-xs uppercase font-bold tracking-wider">BTC/EUR</span>
-                <span id="btc-price" class="text-2xl font-mono font-bold text-blue-400 text-shadow-sm">0,00 €</span>
+            <div class="flex gap-2">
+                <button onclick="saveToGitHub()" class="bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold py-3 px-6 rounded-2xl transition shadow-lg flex items-center gap-2">
+                    <i class="fas fa-cloud-upload-alt"></i> SALVA SU CLOUD
+                </button>
+                <div class="glass px-6 py-3 rounded-2xl flex items-center gap-4">
+                    <span id="btc-price" class="text-2xl font-mono font-bold text-blue-400">0,00 €</span>
+                </div>
             </div>
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
-            <div class="glass p-6 rounded-3xl shadow-xl border-t-4 border-blue-500">
-                <p class="text-slate-400 text-xs font-bold uppercase mb-2">Valore Totale Attuale</p>
+            <div class="glass p-6 rounded-3xl border-t-4 border-blue-500">
+                <p class="text-slate-400 text-xs font-bold uppercase mb-2">Valore Totale</p>
                 <p id="total-value" class="text-3xl font-bold italic">0,00 €</p>
             </div>
-            <div class="glass p-6 rounded-3xl shadow-xl border-t-4 border-indigo-500">
-                <p class="text-slate-400 text-xs font-bold uppercase mb-2">Profitto/Perdita Netta</p>
+            <div class="glass p-6 rounded-3xl border-t-4 border-indigo-500">
+                <p class="text-slate-400 text-xs font-bold uppercase mb-2">Profitto Netto</p>
                 <p id="total-profit" class="text-3xl font-bold">0,00 €</p>
             </div>
-            <div class="glass p-6 rounded-3xl shadow-xl border-t-4 border-emerald-500">
-                <p class="text-slate-400 text-xs font-bold uppercase mb-2">ROI Complessivo</p>
+            <div class="glass p-6 rounded-3xl border-t-4 border-emerald-500">
+                <p class="text-slate-400 text-xs font-bold uppercase mb-2">ROI Totale</p>
                 <p id="total-roi" class="text-3xl font-bold">0,00%</p>
             </div>
         </div>
 
-        <div class="glass rounded-3xl overflow-hidden shadow-2xl mb-10 p-2">
-            <div id="tradingview_chart" style="height: 450px;"></div>
-        </div>
-
         <div class="flex justify-between items-center mb-4 px-2">
             <h2 class="text-xl font-bold gradient-text italic">Gestione Acquisti</h2>
-            <button onclick="addNewPurchase()" class="bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold py-2 px-4 rounded-xl transition shadow-lg">
-                <i class="fas fa-plus mr-2"></i> Aggiungi Acquisto
+            <button onclick="addNewPurchase()" class="bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold py-2 px-4 rounded-xl shadow-lg">
+                <i class="fas fa-plus mr-2"></i> Aggiungi
             </button>
         </div>
 
-        <div class="glass rounded-3xl overflow-hidden shadow-2xl mb-6">
-            <table class="w-full text-left border-collapse">
-                <thead class="bg-slate-800/50">
+        <div class="glass rounded-3xl overflow-hidden mb-6">
+            <table class="w-full text-left">
+                <thead class="bg-slate-800/50 text-slate-400 text-xs uppercase italic">
                     <tr>
-                        <th class="p-5 text-xs font-bold uppercase text-slate-400 italic">Acquisto</th>
-                        <th class="p-5 text-xs font-bold uppercase text-slate-400">Quantità BTC</th>
-                        <th class="p-5 text-xs font-bold uppercase text-slate-400 text-center">Capitale Iniziale</th>
-                        <th class="p-5 text-xs font-bold uppercase text-blue-400 text-center bg-blue-500/5">Capitale Attuale</th>
-                        <th class="p-5 text-xs font-bold uppercase text-slate-400 text-right">ROI %</th>
-                        <th class="p-5 text-xs font-bold uppercase text-slate-400 text-center">Azioni</th>
+                        <th class="p-5">Acquisto</th>
+                        <th class="p-5">BTC</th>
+                        <th class="p-5 text-center">Costo Tot. (€)</th>
+                        <th class="p-5 text-center">Valore (€)</th>
+                        <th class="p-5 text-right">ROI %</th>
+                        <th class="p-5 text-center"></th>
                     </tr>
                 </thead>
                 <tbody id="table-body"></tbody>
             </table>
         </div>
 
-        <div class="glass rounded-3xl p-6 shadow-2xl mb-10 border-t-4 border-cyan-500">
+        <div class="glass rounded-3xl p-6 mb-10 border-t-4 border-cyan-500">
             <div class="flex flex-col md:flex-row items-center gap-6">
                 <div class="flex-1">
                     <h2 class="text-xl font-bold gradient-text italic mb-1">CASH</h2>
-                    <p class="text-slate-400 text-xs uppercase font-bold tracking-wider">Disponibilità su Exchange (€)</p>
+                    <p class="text-slate-400 text-xs font-bold tracking-wider">DISPONIBILITÀ SU EXCHANGE (€)</p>
                 </div>
                 <div class="flex items-center gap-4 bg-slate-800/50 p-3 rounded-2xl border border-slate-700">
-                    <input type="number" id="cash-input" placeholder="0.00" step="0.01" oninput="saveAndCalc()" 
-                           class="bg-transparent text-2xl font-mono font-bold text-cyan-400 focus:outline-none w-32">
-                    <div class="h-8 w-px bg-slate-700"></div>
-                    <label class="flex items-center cursor-pointer group">
-                        <div class="relative">
-                            <input type="checkbox" id="cash-subtract-toggle" class="sr-only" onchange="saveAndCalc()">
-                            <div class="block bg-slate-700 w-14 h-8 rounded-full transition group-hover:bg-slate-600"></div>
-                            <div class="dot absolute left-1 top-1 bg-white w-6 h-6 rounded-full transition transform"></div>
-                        </div>
-                        <span class="ml-3 text-xs font-bold text-slate-400 uppercase group-hover:text-slate-300">Sottrai dai Totali</span>
+                    <input type="number" id="cash-input" oninput="updateData()" class="bg-transparent text-2xl font-mono font-bold text-cyan-400 focus:outline-none w-32">
+                    <label class="flex items-center cursor-pointer">
+                        <input type="checkbox" id="cash-subtract-toggle" onchange="updateData()" class="mr-2">
+                        <span class="text-xs font-bold text-slate-400">SOTTRAI DAI TOTALI</span>
                     </label>
                 </div>
             </div>
-            <style>
-                #cash-subtract-toggle:checked ~ .dot { transform: translateX(100%); background-color: #06b6d4; }
-                #cash-subtract-toggle:checked ~ .block { background-color: #164e63; }
-            </style>
-        </div>
-
-        <div class="glass rounded-3xl p-6 shadow-2xl mb-10 border-t-4 border-yellow-500">
-            <div class="flex justify-between items-center mb-4">
-                <h2 class="text-xl font-bold gradient-text italic">Allarmi di Prezzo</h2>
-                <div class="flex items-center gap-2">
-                    <button onclick="testSound()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 py-2 px-4 rounded-xl border border-slate-700">
-                        <i class="fas fa-volume-up text-blue-400"></i>
-                    </button>
-                </div>
-            </div>
-            <div class="flex flex-col sm:flex-row gap-2 mb-6">
-                <input type="number" id="alert-price" placeholder="Prezzo Target EUR" class="flex-1 bg-slate-800/50 border border-slate-700 rounded-xl px-4 py-3 text-white focus:border-yellow-500">
-                <button onclick="addAlert()" class="bg-yellow-600 hover:bg-yellow-500 text-white font-bold py-3 px-8 rounded-xl transition">Aggiungi</button>
-            </div>
-            <div id="alerts-list" class="flex flex-col gap-2"></div>
-        </div>
-
-        <div class="mt-8 text-center text-slate-500 text-xs flex flex-col gap-2">
-            <p>I dati vengono salvati automaticamente nel browser locale.</p>
-            <p>Aggiornamento ogni 0,2s • PMC: <span id="pmc-display" class="font-bold text-slate-300 italic">0,00 €</span></p>
         </div>
     </div>
 
-    <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
-    <script type="text/javascript">
-      new TradingView.widget({
-        "autosize": true,
-        "symbol": "COINBASE:BTCEUR",
-        "interval": "1",
-        "theme": "dark",
-        "style": "1",
-        "locale": "it",
-        "container_id": "tradingview_chart"
-      });
-    </script>
-
     <script>
-        // --- LOGICA DI PERSISTENZA DATI ---
         let purchases = [];
-        const STORAGE_KEY = 'btc_monitor_data';
+        const REPO = "tuo-username/BTCMonitorPro"; // CAMBIA QUESTO
+        const DATA_PATH = "user_data.json";
 
-        // Carica i dati all'avvio
-        function loadSavedData() {
-            const saved = localStorage.getItem(STORAGE_KEY);
-            if (saved) {
-                const data = JSON.parse(saved);
+        async function init() {
+            try {
+                const res = await fetch(`https://raw.githubusercontent.com/${REPO}/main/${DATA_PATH}`);
+                const data = await res.json();
                 purchases = data.purchases || [];
                 document.getElementById('cash-input').value = data.cashAmount || 0;
                 document.getElementById('cash-subtract-toggle').checked = data.cashSubtract || false;
-            } else {
-                // Dati di default se non c'è nulla in memoria
-                purchases = [
-                    { id: 1, btc: 0.00320447, cost: 172.22, label: "Acquisto #1" }
-                ];
+                updateData();
+            } catch (e) {
+                console.log("Inizializzazione con dati locali...");
+                purchases = [{ id: 1, btc: 0.00320447, cost: 172.22, label: "Acquisto #1" }];
+                updateData();
             }
         }
 
-        // Salva i dati
-        function saveData() {
-            const dataToSave = {
-                purchases: purchases,
-                cashAmount: parseFloat(document.getElementById('cash-input').value) || 0,
-                cashSubtract: document.getElementById('cash-subtract-toggle').checked
-            };
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(dataToSave));
+        async function saveToGitHub() {
+            const token = prompt("Inserisci il tuo GitHub Personal Access Token:");
+            if (!token) return;
+            
+            try {
+                const getFile = await fetch(`https://api.github.com/repos/${REPO}/contents/${DATA_PATH}`, {
+                    headers: { "Authorization": `token ${token}` }
+                });
+                const fileData = await getFile.json();
+                const sha = fileData.sha;
+
+                const content = {
+                    purchases: purchases,
+                    cashAmount: parseFloat(document.getElementById('cash-input').value) || 0,
+                    cashSubtract: document.getElementById('cash-subtract-toggle').checked
+                };
+
+                const response = await fetch(`https://api.github.com/repos/${REPO}/contents/${DATA_PATH}`, {
+                    method: "PUT",
+                    headers: { "Authorization": `token ${token}`, "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        message: "Update via Dashboard",
+                        content: btoa(JSON.stringify(content, null, 2)),
+                        sha: sha
+                    })
+                });
+
+                if (response.ok) alert("Sincronizzato!");
+                else alert("Errore durante il salvataggio.");
+            } catch (e) { alert("Errore di rete."); }
         }
 
-        // Funzione combinata per input real-time
-        function saveAndCalc() {
-            saveData();
-            updateData(); // Ricalcola tutto
-        }
-
-        // --- GESTIONE TABELLA ---
         function addNewPurchase() {
-            const nextId = Date.now(); // ID univoco temporale
-            purchases.push({ id: nextId, btc: 0, cost: 0, label: `Acquisto #${purchases.length + 1}` });
-            saveData();
-            updateData();
+            purchases.push({ id: Date.now(), btc: 0, cost: 0, label: `Acquisto #${purchases.length + 1}` });
+            renderTable(lastPrice);
         }
 
         function removePurchase(id) {
             purchases = purchases.filter(p => p.id !== id);
-            saveData();
             updateData();
         }
 
-        function updatePurchaseValue(id, field, value) {
-            const index = purchases.findIndex(p => p.id === id);
-            if (index !== -1) {
-                purchases[index][field] = parseFloat(value) || 0;
-                saveData(); // Salva ogni volta che l'utente scrive
-            }
-        }
-
-        // --- CALCOLI E PREZZO ---
-        const portfolioOffset = 2.00;
-        const fmt = (val) => val.toLocaleString('it-IT', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' €';
-        let lastPrice = null;
+        let lastPrice = 0;
+        const fmt = (v) => v.toLocaleString('it-IT', { minimumFractionDigits: 2 }) + ' €';
 
         async function updateData() {
-            try {
-                const response = await fetch('https://api.coinbase.com/v2/prices/BTC-EUR/spot');
-                const data = await response.json();
-                const currentPrice = parseFloat(data.data.amount);
-                
-                document.getElementById('btc-price').innerText = fmt(currentPrice);
+            const res = await fetch('https://api.coinbase.com/v2/prices/BTC-EUR/spot');
+            const data = await res.json();
+            lastPrice = parseFloat(data.data.amount);
+            document.getElementById('btc-price').innerText = fmt(lastPrice);
 
-                // Calcoli Totali
-                const totalBtc = purchases.reduce((sum, p) => sum + p.btc, 0);
-                const totalCost = purchases.reduce((sum, p) => sum + p.cost, 0);
-                const pmc = totalBtc > 0 ? totalCost / totalBtc : 0;
-                document.getElementById('pmc-display').innerText = fmt(pmc);
+            let totalBtcValue = purchases.reduce((s, p) => s + (p.btc * lastPrice), 0) + 2.00;
+            let totalCost = purchases.reduce((s, p) => s + p.cost, 0);
+            let cash = parseFloat(document.getElementById('cash-input').value) || 0;
+            
+            if (document.getElementById('cash-subtract-toggle').checked) {
+                totalBtcValue -= cash;
+            }
 
-                const cashAmount = parseFloat(document.getElementById('cash-input').value) || 0;
-                const isSubtracting = document.getElementById('cash-subtract-toggle').checked;
+            const profit = totalBtcValue - totalCost;
+            const roi = totalCost > 0 ? (profit / totalCost) * 100 : 0;
 
-                let currentValueTotal = (totalBtc * currentPrice) + portfolioOffset;
-                let totalProfit = currentValueTotal - totalCost;
-
-                if (isSubtracting) {
-                    currentValueTotal -= cashAmount;
-                    totalProfit -= cashAmount;
-                }
-
-                const totalRoi = totalCost > 0 ? (totalProfit / totalCost) * 100 : 0;
-
-                document.getElementById('total-value').innerText = fmt(currentValueTotal);
-                document.getElementById('total-profit').innerHTML = `<span class="${totalProfit >= 0 ? 'text-emerald-400' : 'text-red-400'}">${fmt(totalProfit)}</span>`;
-                document.getElementById('total-roi').innerHTML = `<span class="${totalRoi >= 0 ? 'text-emerald-400' : 'text-red-400'}">${totalRoi.toFixed(2)}%</span>`;
-
-                // Rendering dinamico della tabella (evita refresh se l'utente sta scrivendo)
-                const tbody = document.getElementById('table-body');
-                
-                // Aggiorniamo la tabella solo se il numero di righe è cambiato 
-                // o durante l'init per non interrompere il focus dell'input
-                if (tbody.children.length !== purchases.length) {
-                    renderTable(currentPrice);
-                } else {
-                    // Aggiorniamo solo i valori non-input (Capitale attuale e ROI)
-                    updateTableLiveValues(currentPrice);
-                }
-
-            } catch (error) { console.error("Errore API:", error); }
+            document.getElementById('total-value').innerText = fmt(totalBtcValue);
+            document.getElementById('total-profit').innerHTML = `<span class="${profit >= 0 ? 'text-emerald-400' : 'text-red-400'}">${fmt(profit)}</span>`;
+            document.getElementById('total-roi').innerHTML = `<span class="${roi >= 0 ? 'text-emerald-400' : 'text-red-400'}">${roi.toFixed(2)}%</span>`;
+            
+            renderTable(lastPrice);
         }
 
-        function renderTable(currentPrice) {
+        function renderTable(price) {
             const tbody = document.getElementById('table-body');
             tbody.innerHTML = '';
-            purchases.forEach((p, index) => {
-                let curVal = p.btc * currentPrice;
-                if (index === purchases.length - 1) curVal += portfolioOffset;
-                const pRoi = p.cost > 0 ? ((curVal - p.cost) / p.cost) * 100 : 0;
-                
+            purchases.forEach(p => {
+                const val = p.btc * price;
+                const roi = p.cost > 0 ? ((val - p.cost)/p.cost)*100 : 0;
                 tbody.innerHTML += `
-                    <tr class="border-t border-slate-700/50 hover:bg-slate-800/30 transition">
-                        <td class="p-5 font-semibold text-blue-300 italic">${p.label}</td>
-                        <td class="p-5">
-                            <input type="number" step="0.00000001" value="${p.btc}" 
-                                   oninput="updatePurchaseValue(${p.id}, 'btc', this.value)" class="table-input">
-                        </td>
-                        <td class="p-5">
-                            <input type="number" step="0.01" value="${p.cost}" 
-                                   oninput="updatePurchaseValue(${p.id}, 'cost', this.value)" class="table-input text-center">
-                        </td>
-                        <td class="p-5 text-center font-bold text-white italic row-cur-val">${fmt(curVal)}</td>
-                        <td class="p-5 text-right font-bold row-roi ${pRoi >= 0 ? 'text-emerald-400' : 'text-red-400'}">${pRoi.toFixed(2)}%</td>
-                        <td class="p-5 text-center">
-                            <button onclick="removePurchase(${p.id})" class="text-slate-500 hover:text-red-400"><i class="fas fa-times"></i></button>
-                        </td>
-                    </tr>
-                `;
+                    <tr class="border-t border-slate-700/50">
+                        <td class="p-5 font-bold text-blue-300">${p.label}</td>
+                        <td class="p-5"><input type="number" value="${p.btc}" oninput="p.btc=parseFloat(this.value)||0;updateData()" class="table-input"></td>
+                        <td class="p-5"><input type="number" value="${p.cost}" oninput="p.cost=parseFloat(this.value)||0;updateData()" class="table-input"></td>
+                        <td class="p-5 text-center">${fmt(val)}</td>
+                        <td class="p-5 text-right font-bold ${roi>=0?'text-emerald-400':'text-red-400'}">${roi.toFixed(2)}%</td>
+                        <td class="p-5"><button onclick="removePurchase(${p.id})"><i class="fas fa-times"></i></button></td>
+                    </tr>`;
             });
         }
-
-        function updateTableLiveValues(currentPrice) {
-            const rows = document.querySelectorAll('#table-body tr');
-            purchases.forEach((p, index) => {
-                let curVal = p.btc * currentPrice;
-                if (index === purchases.length - 1) curVal += portfolioOffset;
-                const pRoi = p.cost > 0 ? ((curVal - p.cost) / p.cost) * 100 : 0;
-                
-                const row = rows[index];
-                if (row) {
-                    row.querySelector('.row-cur-val').innerText = fmt(curVal);
-                    const roiEl = row.querySelector('.row-roi');
-                    roiEl.innerText = `${pRoi.toFixed(2)}%`;
-                    roiEl.className = `p-5 text-right font-bold row-roi ${pRoi >= 0 ? 'text-emerald-400' : 'text-red-400'}`;
-                }
-            });
-        }
-
-        // Inizializzazione
-        loadSavedData();
-        updateData();
-        setInterval(updateData, 200);
-
-        // Funzione per test audio e allarmi (semplificata per il contesto)
-        function testSound() { alert("Test Audio Eseguito (Audio Context richiesto)"); }
+        init();
+        setInterval(updateData, 5000);
     </script>
 </body>
 </html>
