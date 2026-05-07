@@ -1,0 +1,36 @@
+name: BTC 5-Minute Monitor
+
+on:
+  schedule:
+    - cron: '*/5 * * * *' # Ogni 5 minuti
+  workflow_dispatch:
+
+jobs:
+  check-and-update:
+    runs-on: ubuntu-latest
+    # Permessi necessari per scrivere nel repository
+    permissions:
+      contents: write 
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      - name: Install dependencies
+        run: npm install axios resend
+
+      - name: Run Monitor
+        env:
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+        run: node monitor.js
+
+      - name: Commit Changes
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add baseline.json
+          git diff --quiet && git diff --staged --quiet || (git commit -m "Aggiornata baseline BTC [skip ci]" && git push)
