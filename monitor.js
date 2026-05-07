@@ -43,8 +43,8 @@ async function run() {
 
         if (Math.abs(percentageChange) >= 5) {
             await resend.emails.send({
-                from: 'BTC Monitor <onboarding@resend.dev>',
-                to: 'tua-email@esempio.it',
+                from: 'BTC Monitor <onboardingresend.dev>',
+                to: 'itsaimybruh@gmail.com',
                 subject: `Alert BTC: ${percentageChange.toFixed(2)}% (${currentPrice.toFixed(0)} EUR)`,
                 html: `
                     <h2>Variazione BTC/EUR: ${percentageChange.toFixed(2)}%</h2>
