@@ -1,0 +1,10 @@
+{
+  "purchases": [
+    { "id": 1, "btc": 0.00320447, "cost": 172.22, "label": "Acquisto #1" }
+    { "id": 2, "btc": 0.00320447, "cost": 172.22, "label": "Acquisto #2" }
+    { "id": 3, "btc": 0.00320447, "cost": 172.22, "label": "Acquisto #3" }
+    { "id": 4, "btc": 0.00320447, "cost": 172.22, "label": "Acquisto #4" }
+  ],
+  "cashAmount": 0,
+  "cashSubtract": false
+}
