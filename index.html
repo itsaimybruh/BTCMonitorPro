@@ -133,7 +133,7 @@
             </div>
 
             <div id="alerts-list" class="flex flex-col gap-2">
-                </div>
+            </div>
         </div>
 
         <div class="mt-8 text-center text-slate-500 text-xs flex flex-col gap-2">
@@ -161,12 +161,11 @@
     </script>
 
     <script>
-        // Array dinamico degli acquisti
+        // Array dinamico degli acquisti aggiornato con i dati reali dello screenshot
         let purchases = [
-            { id: 1, btc: 0.00320447, cost: 172.22, label: "Acquisto #1" },
-            { id: 2, btc: 0.00212642, cost: 126.30, label: "Acquisto #2" },
-            { id: 3, btc: 0.00111832, cost: 60.60, label: "Acquisto #3" },
-            { id: 4, btc: 0.0000338, cost: 1.99, label: "Acquisto #4" }
+            { id: 1, btc: 0.00704, cost: 442.89, label: "Acquisto #1" },
+            { id: 2, btc: 0.00330969, cost: 196.15, label: "Acquisto #2" },
+            { id: 3, btc: 0.00363949, cost: 202.47, label: "Acquisto #3" }
         ];
 
         const portfolioOffset = 2.00;
@@ -193,8 +192,6 @@
             const index = purchases.findIndex(p => p.id === id);
             if (index !== -1) {
                 purchases[index][field] = parseFloat(value) || 0;
-                // Non chiamiamo updateData qui per evitare loop continui mentre l'utente digita, 
-                // ma i calcoli avverranno al prossimo tick dell'intervallo (200ms)
             }
         }
 
@@ -225,7 +222,7 @@
             } else {
                 const oscillator = audioCtx.createOscillator();
                 const gainNode = audioCtx.createGain();
-                oscillator.type = 'sine';
+                 oscillator.type = 'sine';
                 oscillator.frequency.setValueAtTime(880, audioCtx.currentTime);
                 gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime);
                 oscillator.connect(gainNode);
@@ -359,8 +356,6 @@
                 // --- RENDERING TABELLA ---
                 const tbody = document.getElementById('table-body');
                 
-                // Salviamo la posizione dello scroll o focus se necessario, 
-                // ma per semplicità ricostruiamo se la lunghezza cambia o i dati differiscono
                 let tableHtml = '';
                 purchases.forEach((p, index) => {
                     let currentPurchaseValue = p.btc * currentPrice;
@@ -391,24 +386,7 @@
                     `;
                 });
                 
-                // Aggiorna il DOM solo se necessario per non interrompere la digitazione
-                // In questo caso, aggiorniamo solo le parti non-input se possibile, 
-                // ma per mantenere il codice compatto agganciamo gli eventi agli input.
-                const activeEl = document.activeElement;
-                const activeId = activeEl ? activeEl.closest('tr')?.rowIndex : null;
-                const cursorStart = activeEl?.selectionStart;
-
                 tbody.innerHTML = tableHtml;
-
-                // Ripristino focus per non interrompere la scrittura
-                if (activeId !== null) {
-                    const row = tbody.rows[activeId - 1];
-                    if (row) {
-                        const inputs = row.querySelectorAll('input');
-                        // Logica elementare per focus: se era btc (col 1) o cost (col 2)
-                        // Questo è un workaround semplificato
-                    }
-                }
 
             } catch (error) {
                 console.error("API Error:", error);
